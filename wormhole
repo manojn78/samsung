@@ -1,0 +1,91 @@
+#include <iostream>
+#include <vector>
+#include <climits>
+#include <cmath>
+
+using namespace std;
+
+struct Vertex {
+    int x, y;
+    Vertex(int x, int y) : x(x), y(y) {}
+};
+
+// Function to calculate Manhattan distance
+int distance(Vertex src, Vertex dest) {
+    return abs(src.x - dest.x) + abs(src.y - dest.y);
+}
+
+int ans = INT_MAX; // Global variable to store the minimum distance
+
+// DFS function to find the minimum distance
+void getMinDistance(vector<vector<int>>& graph, int cur_vertex, int fin_vertex, vector<bool>& visited, int cur_dist) {
+    if (cur_vertex == fin_vertex) {
+        ans = min(ans, cur_dist);
+        return;
+    }
+    if (visited[cur_vertex]) return;
+
+    visited[cur_vertex] = true;
+    for (int i = 0; i < graph.size(); i++) {
+        if (graph[cur_vertex][i] != -1) {
+            getMinDistance(graph, i, fin_vertex, visited, cur_dist + graph[cur_vertex][i]);
+        }
+    }
+    visited[cur_vertex] = false;
+}
+
+int main() {
+    int sx, sy, dx, dy, num_holes;
+    cin >> sx >> sy >> dx >> dy >> num_holes;
+
+    vector<Vertex> vertexList;
+    vertexList.push_back(Vertex(sx, sy)); // Source
+
+    Vertex dest_node(dx, dy);
+    int totalVertices = num_holes * 2 + 2;
+    vector<vector<int>> graph(totalVertices, vector<int>(totalVertices, -1));
+
+    int graphIndex = 1;
+    for (int i = 0; i < num_holes; i++) {
+        int x1, y1, x2, y2, dist;
+        cin >> x1 >> y1 >> x2 >> y2 >> dist;
+
+        vertexList.push_back(Vertex(x1, y1)); // Wormhole start
+        vertexList.push_back(Vertex(x2, y2)); // Wormhole end
+
+        graph[graphIndex][graphIndex + 1] = graph[graphIndex + 1][graphIndex] = dist;
+        graphIndex += 2;
+    }
+
+    vertexList.push_back(dest_node); // Destination
+
+    // Fill distance from source and destination
+    for (int i = 0; i < totalVertices; i++) {
+        graph[0][i] = distance(vertexList[0], vertexList[i]);
+        graph[totalVertices - 1][i] = distance(vertexList[totalVertices - 1], vertexList[i]);
+    }
+
+    // Fill adjacency matrix for wormholes
+    for (int i = 1; i < totalVertices - 1; i++) {
+        for (int j = 0; j < totalVertices; j++) {
+            if (i == j) {
+                graph[i][j] = 0;
+            } else if (graph[i][j] == -1) {
+                if (i % 2 == 1) {
+                    graph[i][j] = graph[i][i + 1] + distance(vertexList[i + 1], vertexList[j]);
+                } else {
+                    graph[i][j] = graph[i][i - 1] + distance(vertexList[i - 1], vertexList[j]);
+                }
+            }
+        }
+    }
+
+    graph[0][totalVertices - 1] = graph[totalVertices - 1][0] = distance(vertexList[0], vertexList[vertexList.size() - 1]);
+
+    vector<bool> visited(totalVertices, false);
+    getMinDistance(graph, 0, totalVertices - 1, visited, 0);
+
+    cout << "Minimum Distance: " << ans << endl;
+
+    return 0;
+}
