@@ -1,0 +1,66 @@
+#include <iostream>
+#include <vector>
+#include <algorithm>
+using namespace std;
+
+struct Point {
+    int x, y;
+};
+
+// Function to determine the orientation of ordered triplet (p1, p2, p3)
+int orientation(Point p1, Point p2, Point p3) {
+    int val = (p3.y - p2.y) * (p2.x - p1.x) - (p2.y - p1.y) * (p3.x - p2.x);
+    if (val == 0) return 0; // Collinear
+    return (val > 0) ? 1 : -1; // Clockwise or Counterclockwise
+}
+
+// Distance squared between two points (to compare distances)
+int dist(Point p1, Point p2) {
+    return (p1.x - p2.x) * (p1.x - p2.x) + (p1.y - p2.y) * (p1.y - p2.y);
+}
+
+// Gift Wrapping (Jarvis March) Algorithm to find convex hull
+vector<Point> gift_wrapping(vector<Point> &points) {
+    if (points.size() < 3) return {}; // Convex hull is not possible
+    
+    vector<Point> hull;
+    Point onHull = *min_element(points.begin(), points.end(), [](Point a, Point b) {
+        return (a.x < b.x) || (a.x == b.x && a.y < b.y);
+    });
+    
+    while (true) {
+        hull.push_back(onHull);
+        Point nextPoint = points[0];
+        
+        for (Point point : points) {
+            int o = orientation(onHull, nextPoint, point);
+            if (nextPoint.x == onHull.x && nextPoint.y == onHull.y || o == 1 ||
+                (o == 0 && dist(onHull, point) > dist(onHull, nextPoint))) {
+                nextPoint = point;
+            }
+        }
+        
+        onHull = nextPoint;
+        if (onHull.x == hull[0].x && onHull.y == hull[0].y) break;
+    }
+    
+    return hull;
+}
+
+int main() {
+    int n;
+    cin >> n;
+    vector<Point> points(n);
+    
+    for (int i = 0; i < n; i++) {
+        cin >> points[i].x >> points[i].y;
+    }
+    
+    vector<Point> hull = gift_wrapping(points);
+    
+    for (Point p : hull) {
+        cout << "(" << p.x << ", " << p.y << ")\n";
+    }
+    
+    return 0;
+}
