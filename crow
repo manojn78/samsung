@@ -1,0 +1,39 @@
+#include <bits/stdc++.h>
+using namespace std;
+
+bool canOverflowKpots(vector<int>& O, int K, int S) {
+    int count = 0, stones = S;
+    for (int i = 0; i < O.size(); i++) {
+        if (stones >= O[i]) {
+            stones -= O[i];
+            count++;
+        }
+        if (count >= K) return true;
+    }
+    return false;
+}
+
+int minStonesToOverflowKpots(vector<int>& O, int K) {
+    sort(O.begin(), O.end());
+    int low = 1, high = accumulate(O.begin(), O.end(), 0), result = high;
+
+    while (low <= high) {
+        int mid = low + (high - low) / 2;
+        if (canOverflowKpots(O, K, mid)) {
+            result = mid;
+            high = mid - 1;
+        } else {
+            low = mid + 1;
+        }
+    }
+    return result;
+}
+
+int main() {
+    int n, k;
+    cin >> n >> k;
+    vector<int> O(n);
+    for (int i = 0; i < n; i++) cin >> O[i];
+    cout << minStonesToOverflowKpots(O, k) << endl;
+    return 0;
+}
