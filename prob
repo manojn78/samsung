@@ -1,0 +1,57 @@
+#include <iostream>
+#include <vector>
+
+using namespace std;
+
+void docProb(vector<vector<double>>& graph, int nodes, int time, int curNode, double p, vector<double>& answer) {
+    if (time <= 0) {
+        answer[curNode] += p;
+        return;
+    }
+
+    for (int i = 1; i <= nodes; i++) {
+        if (graph[curNode][i] != 0) {
+            p *= graph[curNode][i];  // Multiply probability before recursion
+            docProb(graph, nodes, time - 10, i, p, answer);
+            p /= graph[curNode][i];  // Restore probability after recursion (backtracking)
+        }
+    }
+}
+
+int main() {
+    int t;
+    cin >> t;
+    
+    while (t--) {
+        int nodes, edges, time;
+        cin >> nodes >> edges >> time;
+
+        vector<vector<double>> arr(nodes + 1, vector<double>(nodes + 1, 0.0));
+
+        for (int i = 0; i < edges; i++) {
+            int from, to;
+            double prob;
+            cin >> from >> to >> prob;
+            arr[from][to] = prob;
+        }
+
+        /* Initialize answer and function call */
+        vector<double> answer(nodes + 1, 0.0);
+        docProb(arr, nodes, time, 1, 1.0, answer);
+
+        /* Select max probability node */
+        double finalProb = 0.0;
+        int finalDivision = 0;
+
+        for (int i = 1; i <= nodes; i++) {
+            if (answer[i] > finalProb) {
+                finalProb = answer[i];
+                finalDivision = i;
+            }
+        }
+
+        cout << finalDivision << " " << finalProb << "\n";
+    }
+
+    return 0;
+}
