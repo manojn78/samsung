@@ -1,0 +1,56 @@
+#include <iostream>
+#include <vector>
+#include <cstring>
+using namespace std;
+
+int N, D, E, F, d, e;
+struct Configuration {
+    int Di, Ei, Fi, SPi;
+};
+
+vector<Configuration> configs;
+int dp[101][101][101]; // DP table
+int D_used = 0, E_used = 0; // Track used resources
+
+int dyna() {  
+    memset(dp, 0, sizeof(dp));
+
+    for (auto config : configs) {
+        for (int i = config.Di; i <= D; i++) {
+            for (int j = config.Ei; j <= E; j++) {
+                for (int k = config.Fi; k <= F; k++) { 
+                    dp[i][j][k] = max(dp[i][j][k], config.SPi + dp[i-config.Di][j-config.Ei][k-config.Fi]);
+                }
+            }
+        }
+    }
+
+    // Track used D and E
+    for (int i = 0; i <= D; i++) {
+        for (int j = 0; j <= E; j++) {
+            if (dp[i][j][F] > 0) { // If F resources were used, update max D and E used
+                D_used = max(D_used, i);
+                E_used = max(E_used, j);
+            }
+        }
+    }
+
+    // Final cost computation
+    int cost = dp[D][E][F] + (d * (D - D_used) + e * (E - E_used));
+    return cost;
+}
+
+int main() {
+    cout << "Enter Inventory (D, E, F), resource costs (d, e), and number of configurations (N): ";
+    cin >> D >> E >> F >> d >> e >> N;
+
+    configs.clear();
+    for (int i = 0; i < N; i++) {
+        int Di, Ei, Fi, SPi;
+        cin >> Di >> Ei >> Fi >> SPi;
+        configs.push_back({Di, Ei, Fi, SPi});
+    }
+
+    int cost = dyna();
+    cout << "Maximum Profit: " << cost << endl;
+}
