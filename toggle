@@ -1,0 +1,45 @@
+#include <iostream>
+#include <vector>
+#include <unordered_map>
+#include <string>
+#include <algorithm>
+
+int main() {
+    int n, m, k;
+    std::cin >> n >> m >> k;
+
+    std::vector<std::vector<int>> mat(n, std::vector<int>(m));
+
+    // Inputting the matrix
+    for (int i = 0; i < n; ++i) {
+        for (int j = 0; j < m; ++j) {
+            std::cin >> mat[i][j];
+        }
+    }
+
+    std::unordered_map<std::string, int> freq_map;
+
+    // Storing frequency in map
+    for (int i = 0; i < n; ++i) {
+        std::string temp;
+        for (int j = 0; j < m; ++j) {
+            temp += std::to_string(mat[i][j]);
+        }
+        // Increment the frequency of the row pattern
+        ++freq_map[temp];
+    }
+
+    int ans = 0;
+
+    for (const auto& entry : freq_map) {
+        // Counting number of zeros in each row pattern
+        int num_zeros = std::count(entry.first.begin(), entry.first.end(), '0');
+        if (num_zeros <= k && (k - num_zeros) % 2 == 0) {
+            ans = std::max(entry.second, ans);
+        }
+    }
+
+    std::cout << "Maximum Rows that can be 1 are: " << ans << std::endl;
+
+    return 0;
+}
